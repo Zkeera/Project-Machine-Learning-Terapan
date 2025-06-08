@@ -34,6 +34,22 @@ Referensi:
 
 Dataset terdiri dari 9.357 baris dan 15 kolom, berdasarkan hasil eksplorasi awal menggunakan .shape. Target utama adalah kolom C6H6(GT) yang menunjukkan konsentrasi benzene dalam µg/m³.
 
+Dataset diambil dari sensor kualitas udara dengan berbagai fitur numerik seperti:
+
+- CO(GT): Karbon monoksida
+
+- PT08.S1(CO): Sensor CO
+
+- PT08.S2(NMHC): Sensor NMHC
+
+- PT08.S3(NOx): Sensor NOx
+
+- T: Suhu
+
+dan beberapa lainnya
+
+Target yang ingin diprediksi adalah kadar Benzena (C6H6(GT)).
+
 ### Fitur yang tersedia meliputi:
 
 - CO(GT), NMHC(GT), NOx(GT), NO2(GT)
@@ -48,21 +64,28 @@ Sebagian besar nilai numerik memiliki format desimal dengan koma (`,`), dan bebe
 
 ## Data Preparation
 
-Langkah-langkah yang dilakukan:
+Berikut adalah langkah-langkah data preparation yang dilakukan:
 
-- Menghapus dua kolom terakhir pada dataset (RH dan AH) karena tidak relevan terhadap target dan memiliki banyak missing value, sesuai eksplorasi awal dengan .info().
+1. Pemilihan FiturFitur yang digunakan sebagai input model (variabel X) adalah:
 
-- Mengganti nilai -200 dengan NaN sebagai indikasi missing value.
+- CO(GT)
 
-- Menghapus baris dengan missing value pada kolom target dan fitur utama.
+- PT08.S1(CO)
 
-- Melakukan pembagian data menjadi training dan testing (80:20 split).
+- PT08.S2(NMHC)
 
-- Mengubah format desimal koma ke titik (',' → '.') dan konversi ke float setelah pembagian data.
+- PT08.S3(NOx)
 
-- Normalisasi fitur numerik menggunakan StandardScaler.
+- T
 
-- Memilih fitur numerik yang relevan sebagai input model.
+2. Pembagian Data
+Data dibagi menjadi data pelatihan dan pengujian dengan rasio 80:20 menggunakan train_test_split() dari sklearn.
+
+3. Perbaikan Format Desimal
+Nilai desimal dikonversi dari koma ke titik agar Python mengenali tipe data numerik secara benar.
+
+4. Normalisasi Fitur
+Fitur dinormalisasi menggunakan StandardScaler agar berada dalam rentang nilai yang seragam dan menghindari bias model.
 
 ## Modeling
 
@@ -85,13 +108,22 @@ from sklearn.ensemble import RandomForestRegressor
 model = RandomForestRegressor(n_estimators=100, random_state=42)
 model.fit(X_train_scaled, y_train)
 ```
+## Visualisasi Korelasi Antar Fitur
+Heatmap korelasi digunakan untuk mengevaluasi hubungan antar fitur numerik. Fitur PT08.S2(NMHC) menunjukkan korelasi tinggi dengan beberapa sensor lain, menunjukkan adanya informasi yang tumpang tindih. Analisis ini membantu dalam pemilihan fitur.
+
+## Model Development
+Model yang digunakan adalah Random Forest Regressor dari sklearn.ensemble. Parameter model:
+- n_estimators=100: Jumlah pohon dalam hutan.
+- random_state=42: Menjamin reprodusibilitas hasil.
+Model dilatih menggunakan data latih yang telah dinormalisasi.
 
 ## Evaluation
 
-### Metrik Evaluasi:
+### Model dievaluasi menggunakan dua metrik:
 
-- **Mean Squared Error (MSE)**
-- **R-squared (R²)**
+- **Mean Squared Error (MSE): 0.0043**
+- **R-squared (R²): ~0.9999**
+Nilai MSE yang sangat kecil dan R² mendekati 1 menandakan performa model sangat baik.
 
 ```python
 from sklearn.metrics import mean_squared_error, r2_score
@@ -104,7 +136,7 @@ r2 = r2_score(y_test, y_pred)
 ### Hasil Evaluasi:
 
 - **MSE**: 0.0043
-- **R²**: mendekati 1, menunjukkan model memiliki akurasi prediksi yang tinggi terhadap target
+- **R²**: ~0.9999, menunjukkan model memiliki akurasi prediksi yang tinggi terhadap target
 
 Model dapat memprediksi kadar Benzene berdasarkan data sensor dengan baik.
 
@@ -113,19 +145,19 @@ Model Random Forest memberikan nilai feature importance untuk setiap fitur input
 
 | Fitur           | Importance |
 | --------------- | ---------- |
-| PT08.S5(O3)     | 0.225      |
-| PT08.S1(CO)     | 0.180      |
-| PT08.S2(NMHC)   | 0.160      |
-| T (Temperature) | 0.135      |
-| PT08.S3(NOx)    | 0.130      |
-| CO(GT)          | 0.090      |
-| PT08.S4(NO2)    | 0.080      |
+| PT08.S2(NMHC)   | 0.99918    |
+| CO(GT)          | 0.00052    |
+| T (Temperature) | 0.00017    |
+| PT08.S1(CO)     | 0.00013    |
+| PT08.S3(NOx)    | 0.00001    |
 
-Fitur sensor seperti PT08.S5(O3) dan PT08.S1(CO) adalah yang paling berkontribusi dalam meningkatkan kadar Benzene.
+PT08.S2(NMHC) merupakan fitur paling berpengaruh terhadap kadar Benzena.
 
 ## Conclusion
 
 Model machine learning berbasis Random Forest berhasil dibangun untuk memprediksi kadar Benzene di udara. Setelah melalui proses pembersihan data, transformasi, dan pelatihan model, sistem ini mampu memberikan prediksi yang akurat.
+
+Model Random Forest Regressor terbukti efektif dalam memprediksi kadar Benzena berdasarkan data sensor kualitas udara. Dengan nilai R² hampir 1 dan MSE sangat kecil, model ini sangat andal. Fitur PT08.S2(NMHC) memiliki kontribusi dominan terhadap prediksi.
 
  ** Menjawab Problem Statement: **
 
