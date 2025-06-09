@@ -213,7 +213,7 @@ Model machine learning berbasis Random Forest berhasil dibangun untuk memprediks
 
 Model Random Forest Regressor terbukti efektif dalam memprediksi kadar Benzena berdasarkan data sensor kualitas udara. Dengan nilai R² hampir 1 dan MSE sangat kecil, model ini sangat andal. Fitur PT08.S2(NMHC) memiliki kontribusi dominan terhadap prediksi.
 
- ** Menjawab Problem Statement: **
+ **Menjawab Problem Statement:**
 
 Model mampu memprediksi kadar Benzene berdasarkan data sensor lingkungan.
 
