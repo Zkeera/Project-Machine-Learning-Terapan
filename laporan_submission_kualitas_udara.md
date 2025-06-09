@@ -34,27 +34,35 @@ Referensi:
 
 Dataset terdiri dari 9.357 baris dan 15 kolom, berdasarkan hasil eksplorasi awal menggunakan .shape. Target utama adalah kolom C6H6(GT) yang menunjukkan konsentrasi benzene dalam µg/m³.
 
-Dataset diambil dari sensor kualitas udara dengan berbagai fitur numerik seperti:
+Dataset yang digunakan dalam proyek ini berasal dari UCI Machine Learning Repository, yang berisi data kualitas udara yang diambil secara berkala di kota tertentu di Eropa. Dataset ini mencakup hasil pembacaan berbagai sensor serta data lingkungan pada rentang waktu tertentu.
 
-- CO(GT): Karbon monoksida
+Sebelum dilakukan pemrosesan, berikut adalah seluruh fitur yang tersedia dalam dataset awal, lengkap dengan deskripsi masing-masing:
 
-- PT08.S1(CO): Sensor CO
-
-- PT08.S2(NMHC): Sensor NMHC
-
-- PT08.S3(NOx): Sensor NOx
-
-- T: Suhu
-
-dan beberapa lainnya
-
-Target yang ingin diprediksi adalah kadar Benzena (C6H6(GT)).
+| Nama Fitur        | Deskripsi                                                                |
+| ----------------- | ------------------------------------------------------------------------ |
+| **Date**          | Tanggal pengukuran dalam format DD/MM/YYYY                               |
+| **Time**          | Waktu pengukuran dalam format HH.MM.SS                                   |
+| **CO(GT)**        | Konsentrasi karbon monoksida dalam ppm (nilai referensi dari alat resmi) |
+| **PT08.S1(CO)**   | Output sensor elektro-kimia untuk karbon monoksida (CO)                  |
+| **NMHC(GT)**      | Konsentrasi Non-Methane Hydrocarbons dalam µg/m³                         |
+| **C6H6(GT)**      | Konsentrasi Benzene dalam µg/m³                                          |
+| **PT08.S2(NMHC)** | Output sensor elektro-kimia untuk NMHC                                   |
+| **NOx(GT)**       | Konsentrasi Nitrogen Oksida dalam ppb                                    |
+| **PT08.S3(NOx)**  | Output sensor elektro-kimia untuk NOx                                    |
+| **NO2(GT)**       | Konsentrasi Nitrogen Dioksida dalam µg/m³                                |
+| **PT08.S4(NO2)**  | Output sensor elektro-kimia untuk NO2                                    |
+| **PT08.S5(O3)**   | Output sensor elektro-kimia untuk Ozon (O₃)                              |
+| **T**             | Suhu udara dalam derajat Celcius                                         |
+| **RH**            | Kelembaban relatif udara dalam persen                                    |
+| **AH**            | Kelembaban absolut udara dalam kg/m³                                     |
 
 ### Fitur yang tersedia meliputi:
 
 - CO(GT), NMHC(GT), NOx(GT), NO2(GT)
 - Sensor: PT08.S1(CO), PT08.S2(NMHC), PT08.S3(NOx), PT08.S4(NO2), PT08.S5(O3)
 - T (temperature), RH (relative humidity), AH (absolute humidity)
+
+Walaupun beberapa fitur seperti Date, Time, atau PT08.S5(O3) tidak digunakan dalam model akhir, tetap penting untuk memahami seluruh konteks awal dari data yang tersedia. Ini membantu menjaga transparansi dan kualitas proses eksplorasi data.
 
 ### Target:
 
@@ -66,19 +74,52 @@ Sebagian besar nilai numerik memiliki format desimal dengan koma (`,`), dan bebe
 
 Berikut adalah langkah-langkah data preparation yang dilakukan:
 
-1. Pemilihan FiturFitur yang digunakan sebagai input model (variabel X) adalah:
+1. Penghapusan Kolom Tidak Relevan
+Dua kolom terakhir dalam dataset dihapus karena tidak memiliki nilai yang informatif atau relevan untuk proses analisis dan pemodelan. Langkah ini dilakukan menggunakan:
+
+df = df.iloc[:, :-2]
+
+2. Penanganan Nilai Tidak Valid
+Dalam dataset, terdapat nilai -200 yang merupakan indikator nilai tidak tersedia (missing values). Untuk memudahkan analisis, nilai -200 digantikan dengan NaN menggunakan:
+
+df.replace(-200, np.nan, inplace=True)
+
+3. Penghapusan Baris dengan Missing Values
+Setelah mengganti nilai tidak valid, semua baris yang mengandung NaN dihapus untuk memastikan data bersih:
+
+df.dropna(inplace=True)
+
+4. Pemilihan Fitur
+Tidak semua fitur digunakan untuk pelatihan model. Pemilihan dilakukan berdasarkan eksplorasi awal dan pertimbangan relevansi terhadap target yang ingin diprediksi. Fitur-fitur yang dipilih meliputi:
 
 - CO(GT)
 
 - PT08.S1(CO)
 
+- C6H6(GT)
+
 - PT08.S2(NMHC)
+
+- NOx(GT)
 
 - PT08.S3(NOx)
 
+- NO2(GT)
+
+- PT08.S4(NO2)
+
 - T
 
-2. Pembagian Data
+- RH
+
+- AH
+
+5. Pembagian Fitur dan Target
+Setelah fitur dipilih, dataset dibagi menjadi variabel fitur X dan target y, kemudian dilakukan pembagian data latih dan data uji dengan proporsi 80:20 menggunakan:
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
 Data dibagi menjadi data pelatihan dan pengujian dengan rasio 80:20 menggunakan train_test_split() dari sklearn.
 
 3. Perbaikan Format Desimal
@@ -140,16 +181,27 @@ r2 = r2_score(y_test, y_pred)
 
 Model dapat memprediksi kadar Benzene berdasarkan data sensor dengan baik.
 
+Evaluasi performa model dilakukan menggunakan algoritma Random Forest Classifier. Salah satu metrik yang dianalisis adalah feature importance, yang menunjukkan seberapa besar kontribusi masing-masing fitur terhadap model prediksi.
+
+Berikut adalah hasil feature importance:
+
 ### Analisis Feature Importance:
 Model Random Forest memberikan nilai feature importance untuk setiap fitur input. Berdasarkan hasil analisis:
 
-| Fitur           | Importance |
-| --------------- | ---------- |
-| PT08.S2(NMHC)   | 0.99918    |
-| CO(GT)          | 0.00052    |
-| T (Temperature) | 0.00017    |
-| PT08.S1(CO)     | 0.00013    |
-| PT08.S3(NOx)    | 0.00001    |
+| Fitur         | Importance |
+| ------------- | ---------- |
+| CO(GT)        | 0.000309   |
+| PT08.S1(CO)   | 0.042835   |
+| C6H6(GT)      | 0.306118   |
+| PT08.S2(NMHC) | 0.049213   |
+| NOx(GT)       | 0.070057   |
+| PT08.S3(NOx)  | 0.062163   |
+| NO2(GT)       | 0.108675   |
+| PT08.S4(NO2)  | 0.042498   |
+| T             | 0.159330   |
+| RH            | 0.070025   |
+| AH            | 0.088777   |
+
 
 PT08.S2(NMHC) merupakan fitur paling berpengaruh terhadap kadar Benzena.
 
@@ -163,4 +215,16 @@ Model Random Forest Regressor terbukti efektif dalam memprediksi kadar Benzena b
 
 Model mampu memprediksi kadar Benzene berdasarkan data sensor lingkungan.
 
-Fitur yang paling berkontribusi terhadap kadar Benzene adalah PT08.S5(O3), PT08.S1(CO), dan PT08.S2(NMHC), berdasarkan nilai feature importance dari model.
+Berdasarkan hasil pelatihan dan evaluasi model, fitur-fitur berikut diketahui memiliki kontribusi terbesar terhadap performa model:
+
+C6H6(GT) (konsentrasi Benzene)
+
+T (suhu udara)
+
+NO2(GT) (konsentrasi Nitrogen Dioksida)
+
+AH (kelembaban absolut)
+
+Fitur-fitur tersebut memiliki nilai feature importance paling tinggi, sehingga dapat disimpulkan bahwa mereka memainkan peran penting dalam memengaruhi hasil prediksi model.
+
+Kesimpulan ini dibuat berdasarkan fitur yang benar-benar digunakan dalam model (variabel X), sehingga sesuai dengan logika evaluasi dan analisis yang dilakukan.
