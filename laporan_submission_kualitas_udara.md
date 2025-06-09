@@ -199,11 +199,13 @@ Model Random Forest memberikan nilai feature importance untuk setiap fitur input
 | NO2(GT)       | 0.108675   |
 | PT08.S4(NO2)  | 0.042498   |
 | T             | 0.159330   |
-| RH            | 0.070025   |
-| AH            | 0.088777   |
 
 
 PT08.S2(NMHC) merupakan fitur paling berpengaruh terhadap kadar Benzena.
+
+Fitur yang paling berkontribusi dalam memprediksi kadar C6H6(GT) adalah PT08.S2(NMHC). Hal ini sesuai secara logis, mengingat PT08.S2(NMHC) adalah sensor yang mengukur senyawa Non-Methane Hydrocarbon, yang memiliki korelasi tinggi dengan senyawa Benzene (C6H6).
+
+Fitur C6H6(GT) tidak digunakan sebagai input dalam model, melainkan sebagai target prediksi. Oleh karena itu, tidak semestinya dimasukkan ke dalam analisis feature importance.
 
 ## Conclusion
 
